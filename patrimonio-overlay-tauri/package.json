@@ -1,0 +1,11 @@
+{
+  "name": "patrimonio-overlay",
+  "version": "1.0.0",
+  "description": "Overlay de Gestion de Patrimonio con Tauri",
+  "scripts": {
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^1.5.14"
+  }
+}
