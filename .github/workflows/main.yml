@@ -1,0 +1,48 @@
+name: Compilar Overlay Patrimonio Tauri
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Verificar y preparar archivos del proyecto
+        run: |
+          if (Test-Path "*.zip") {
+            Get-ChildItem "*.zip" | ForEach-Object { Expand-Archive -Path $_.FullName -DestinationPath "." -Force }
+          }
+          if (!(Test-Path "package.json")) {
+            $pkg = Get-ChildItem -Path . -Filter "package.json" -Recurse | Select-Object -First 1
+            if ($pkg) {
+              Copy-Item -Path "$($pkg.DirectoryName)\*" -Destination "." -Recurse -Force
+            }
+          }
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Configurar Rust (Toolchain estable)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Instalar CLI de Tauri
+        run: npm install
+
+      - name: Compilar Ejecutable en Tauri
+        run: npx tauri build
+
+      - name: Subir Ejecutable Portable (.exe directo) y Setup
+        uses: actions/upload-artifact@v4
+        with:
+          name: PatrimonioOverlay-Windows-Executable
+          path: |
+            src-tauri/target/release/patrimonio-overlay.exe
+            src-tauri/target/release/bundle/nsis/*.exe
